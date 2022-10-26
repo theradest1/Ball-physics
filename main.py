@@ -78,10 +78,10 @@ def collision(ball_a, ball_b):
         ball_b.xVelocity = (x_ + _x) * ball_b.damper
         ball_b.yVelocity = (y + _y_) * ball_b.damper
 
-        ball_a.x += ball_a.xVelocity * speed
-        ball_a.y += ball_a.yVelocity * speed
-        ball_b.x += ball_b.xVelocity * speed
-        ball_b.y += ball_b.yVelocity * speed
+        ball_a.x += ball_a.xVelocity * speed * dt
+        ball_a.y += ball_a.yVelocity * speed * dt
+        ball_b.x += ball_b.xVelocity * speed * dt
+        ball_b.y += ball_b.yVelocity * speed * dt
 
 
 velocity_rand = (-50, 50)
@@ -91,9 +91,9 @@ black = (255, 255, 255)
 white = (0, 0, 0)
 green = (0, 255, 0)
 
-gravity = 3
+gravity = 50
 screen = pygame.display.set_mode((max_y, max_x), pygame.RESIZABLE)
-speed = .02
+speed = 5
 #small = .5
 #collision_dist = 5
 
@@ -112,20 +112,21 @@ def text_to_screen(screen, text, x, y, size=50, color=(200, 000, 000), font_type
     text = font.render(text, True, color)
     screen.blit(text, (x, y))
 
-
+pastTime = time.time()
 while True:
-    dt = clock.tick(60)
+    dt = time.time() - pastTime
+    pastTime = time.time()
     screen.fill(white)
     for ball in balls:
-        ball.x += ball.xVelocity * speed
-        ball.y += ball.yVelocity * speed
+        ball.x += ball.xVelocity * speed * dt
+        ball.y += ball.yVelocity * speed * dt
         # ground fix
         ball.x = clamp(ball.x, ball.min_x, ball.max_x)
         ball.y = clamp(ball.y, ball.min_y, ball.max_y)
 
         # draw ball and the velocity
         pygame.draw.circle(screen, ball.color, (ball.y, ball.x), ball.size)
-        #pygame.draw.line(screen, (255, 0, 0), (ball.y, ball.x), (ball.y + ball.yVelocity, ball.x + ball.xVelocity))
+        pygame.draw.line(screen, (255, 0, 0), (ball.y, ball.x), (ball.y + ball.yVelocity, ball.x + ball.xVelocity))
     for ball in balls:
         if ball.x >= ball.max_x:
             ball.xVelocity = -abs(ball.xVelocity) * ball.damper
@@ -139,7 +140,7 @@ while True:
         if ball.x <= ball.min_x:
             ball.xVelocity = abs(ball.xVelocity) * ball.damper
             ball.yVelocity *= ball.damper
-        ball.xVelocity += gravity
+        ball.xVelocity += gravity * dt
 
         # print(ball)
         # print(str(ball.y) + " < " + str(max_x))
@@ -150,7 +151,7 @@ while True:
                 if distance(ball.x, ball.y, ball_.x, ball_.y) < ball_.size + ball.size:
                     collision(ball, ball_)
 
-        text_to_screen(screen, int(dt), 1, 1, 20)
+        text_to_screen(screen, dt, 1, 1, 20)
 
     # for window resizing, quit, and button pressing
     for event in pygame.event.get():
