@@ -34,7 +34,7 @@ class Ball:
         self.yVelocity = random.uniform(-50, 50)
 
     def __init__(self):  # , bounce_damper, ball.damper, ball_size, max_x, max_y, min_x, min_y):
-        self.damper = random.uniform(.2, 1)
+        self.damper = random.uniform(0, .5)
         # self.opp_damper = random.uniform(.5, 1)
         self.size = random.uniform(3, 20)
         self.max_x = max_x - self.size
@@ -113,10 +113,12 @@ def text_to_screen(screen, text, x, y, size=50, color=(200, 000, 000), font_type
     screen.blit(text, (x, y))
 
 pastTime = time.time()
+framesPerDraw = 100
+frameCount = 0
 while True:
+    frameCount += 1
     dt = time.time() - pastTime
     pastTime = time.time()
-    screen.fill(white)
     for ball in balls:
         ball.x += ball.xVelocity * speed * dt
         ball.y += ball.yVelocity * speed * dt
@@ -124,22 +126,19 @@ while True:
         ball.x = clamp(ball.x, ball.min_x, ball.max_x)
         ball.y = clamp(ball.y, ball.min_y, ball.max_y)
 
-        # draw ball and the velocity
-        pygame.draw.circle(screen, ball.color, (ball.y, ball.x), ball.size)
-        pygame.draw.line(screen, (255, 0, 0), (ball.y, ball.x), (ball.y + ball.yVelocity, ball.x + ball.xVelocity))
     for ball in balls:
         if ball.x >= ball.max_x:
-            ball.xVelocity = -abs(ball.xVelocity) * ball.damper
-            ball.yVelocity *= ball.damper
+            ball.xVelocity = -abs(ball.xVelocity)# * ball.damper
+            #ball.yVelocity *= ball.damper
         if ball.y >= ball.max_y:
-            ball.yVelocity = -abs(ball.yVelocity) * ball.damper
-            ball.xVelocity *= ball.damper
+            ball.yVelocity = -abs(ball.yVelocity)# * ball.damper
+            #ball.xVelocity *= ball.damper
         if ball.y <= ball.min_y:
-            ball.yVelocity = abs(ball.yVelocity) * ball.damper
-            ball.xVelocity *= ball.damper
+            ball.yVelocity = abs(ball.yVelocity)# * ball.damper
+            #ball.xVelocity *= ball.damper
         if ball.x <= ball.min_x:
-            ball.xVelocity = abs(ball.xVelocity) * ball.damper
-            ball.yVelocity *= ball.damper
+            ball.xVelocity = abs(ball.xVelocity)# * ball.damper
+            #ball.yVelocity *= ball.damper
         ball.xVelocity += gravity * dt
 
         # print(ball)
@@ -148,10 +147,8 @@ while True:
         # ball collisions
         for ball_ in balls:
             if not ball == ball_:
-                if distance(ball.x, ball.y, ball_.x, ball_.y) < ball_.size + ball.size:
+                if distance(ball.x, ball.y, ball_.x, ball_.y) <= ball_.size + ball.size:
                     collision(ball, ball_)
-
-        text_to_screen(screen, dt, 1, 1, 20)
 
     # for window resizing, quit, and button pressing
     for event in pygame.event.get():
@@ -169,5 +166,13 @@ while True:
                 balls.append(Ball())
             elif event.button == 5 and len(balls):
                 del balls[-1]
-
-    pygame.display.flip()
+    
+    if frameCount >= framesPerDraw:
+        frameCount = 0
+        screen.fill(white)
+        text_to_screen(screen, dt, 1, 1, 20)
+        for ball in balls:
+            # draw ball and the velocity
+            pygame.draw.circle(screen, ball.color, (ball.y, ball.x), ball.size)
+            pygame.draw.line(screen, (255, 0, 0), (ball.y, ball.x), (ball.y + ball.yVelocity, ball.x + ball.xVelocity))
+        pygame.display.flip()
